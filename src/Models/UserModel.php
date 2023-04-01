@@ -246,46 +246,40 @@ class UserModel extends ConnectionDB {
     /*******************************************Registrar Fotos************************************************/
     final public static function postSavePictures()
     {
-        // if (Sql::exists("SELECT dni FROM usuario WHERE dni = :dni",":dni",self::getDocumento())) {  
-        //     return ResponseHttp::status400('El DNI ya esta registrado');
-        // } else if (Sql::exists("SELECT correo FROM usuario WHERE correo = :correo",":correo",self::getEmail())) {
-        //     return ResponseHttp::status400('El Correo ya esta registrado');
-        // } else {
-        //     self::setIDToken(hash('sha512',self::getDocumento().self::getEmail()));            
-
             try {
 
                 $profile = self::saveBase64Picture(self::getFotoPerfil(), '/img/profile/' , self::getDocumento());
                 $document = self::saveBase64Picture(self::getFotoDni(), '/img/document/' , self::getDocumento());
+
+                $con = self::getConnection();
+
+                if (Sql::exists("SELECT documento FROM usuario_na_foto WHERE documento = :documento",":documento",self::getDocumento())) {  
+                    $query = $con->prepare("UPDATE usuario_na_foto SET fotoPerfil = :fotoPerfil, fotoDocumento = :fotoDocumento, UltimaActualizacion = CURRENT_TIMESTAMP WHERE documento = :documento");           
+                    $query->execute([
+                        ':documento'  => self::getDocumento(),
+                        ':fotoPerfil' => $profile > 0 ? 1 : 0,
+                        ':fotoDocumento'  => $document > 0 ? 1 : 0
+                    ]);
+                } else {
+                    $query1 = "INSERT INTO usuario_na_foto (documento, fotoPerfil, fotoDocumento, UltimaActualizacion) VALUES";
+                    $query2 = "(:documento,:fotoPerfil,:fotoDocumento, CURRENT_TIMESTAMP)";
+                    $query = $con->prepare($query1 . $query2);
+                    $query->execute([
+                        ':documento'  => self::getDocumento(),
+                        ':fotoPerfil'     => $profile > 0 ? 1 : 0,
+                        ':fotoDocumento'  => $document > 0 ? 1 : 0         
+                    ]);
+                }
 
                 if($profile || $document){
                     return ResponseHttp::status200('Imagenes registradas exitosamente');
                 }else{
                     return ResponseHttp::status500('No se ha registrado ninguna imagen');
                 }
-
-                // $con = self::getConnection();
-                // $query1 = "INSERT INTO usuario (nombre,dni,correo,rol,password,IDToken) VALUES";
-                // $query2 = "(:nombre,:dni,:correo,:rol,:password,:IDToken)";
-                // $query = $con->prepare($query1 . $query2);
-                // $query->execute([
-                //     ':nombre'  => self::getName(),
-                //     ':dni'     => self::getDocumento(),
-                //     ':correo'  => self::getEmail(),
-                //     ':rol'     => self::getRol(),                    
-                //     ':password'=> Security::createPassword(self::getPassword()),
-                //     ':IDToken' => self::getIDToken()            
-                // ]);
-                // if ($query->rowCount() > 0) {
-                //     return ResponseHttp::status200('Usuario registrado exitosamente');
-                // } else {
-                //     return ResponseHttp::status500('No se puede registrar el usuario');
-                // }
             } catch (\PDOException $e) {
                 error_log('UserModel::post -> ' . $e);
                 die(json_encode(ResponseHttp::status500()));
             }
-        // }
     }
 
     public static function saveBase64Picture($base64Picture, $path, $name){
