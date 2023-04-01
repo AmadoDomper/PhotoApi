@@ -254,7 +254,12 @@ class UserModel extends ConnectionDB {
                 $con = self::getConnection();
 
                 if (Sql::exists("SELECT documento FROM usuario_na_foto WHERE documento = :documento",":documento",self::getDocumento())) {  
-                    $query = $con->prepare("UPDATE usuario_na_foto SET fotoPerfil = :fotoPerfil, fotoDocumento = :fotoDocumento, UltimaActualizacion = CURRENT_TIMESTAMP WHERE documento = :documento");           
+                    // $query = $con->prepare("UPDATE usuario_na_foto SET fotoPerfil = :fotoPerfil, fotoDocumento = :fotoDocumento, UltimaActualizacion = CURRENT_TIMESTAMP WHERE documento = :documento");           
+                    $query = $con->prepare("UPDATE usuario_na_foto 
+                                            SET fotoPerfil = CASE WHEN fotoPerfil = 0 THEN :fotoPerfil ELSE fotoPerfil END, 
+                                                fotoDocumento = CASE WHEN fotoDocumento = 0 THEN :fotoDocumento ELSE fotoDocumento END, 
+                                                UltimaActualizacion = CURRENT_TIMESTAMP 
+                                            WHERE documento = :documento");           
                     $query->execute([
                         ':documento'  => self::getDocumento(),
                         ':fotoPerfil' => $profile > 0 ? 1 : 0,
