@@ -1,3 +1,7 @@
+## COMPOSER
+composer require vlucas/phpdotenv
+composer require firebase/php-jwt
+
 ## AUTH
 ---
 >GET auth/:email/:password/
