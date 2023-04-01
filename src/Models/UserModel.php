@@ -12,7 +12,7 @@ class UserModel extends ConnectionDB {
     //Propiedades de la base de datos
     private static string $nombre;
     private static string $apellido;
-    private static string $dni;
+    private static string $documento;
     private static string $correo;
     private static int    $rol;    
     private static string $password;
@@ -24,7 +24,7 @@ class UserModel extends ConnectionDB {
     {
         self::$nombre   = $data['name'] ?: '';
         self::$apellido   = $data['apellido'] ?: '';
-        self::$dni      = $data['dni'] ?: '';
+        self::$documento      = $data['documento'] ?: '';
         self::$correo   = $data['email'] ?: '';
         self::$rol      = $data['rol'] ?: 0;        
         self::$password = $data['password'] ?: ''; 
@@ -35,7 +35,7 @@ class UserModel extends ConnectionDB {
     /************************Metodos Getter**************************/
     final public static function getName(){     return self::$nombre;}
     final public static function getApellido(){     return self::$apellido;}
-    final public static function getDni(){      return self::$dni;}
+    final public static function getDocumento(){      return self::$documento;}
     final public static function getEmail(){    return self::$correo;}
     final public static function getRol(){      return self::$rol;}     
     final public static function getPassword(){ return self::$password;}
@@ -46,7 +46,7 @@ class UserModel extends ConnectionDB {
     /**********************************Metodos Setter***********************************/
     final public static function setName(string $nombre) {      self::$nombre = $nombre;}
     final public static function setApellido(string $apellido) {      self::$apellido = $apellido;}
-    final public static function setDni(string $dni){           self::$dni = $dni;}
+    final public static function setDocumento(string $documento){           self::$documento = $documento;}
     final public static function setEmail(string $correo){      self::$correo = $correo;}
     final public static function setRol(string $rol){           self::$rol = $rol;}      
     final public static function setPassword(string $password){ self::$password = $password;}
@@ -138,7 +138,7 @@ class UserModel extends ConnectionDB {
             $con = self::getConnection();
             $query = $con->prepare("SELECT dni, nombre, apellido FROM usuario WHERE dni = :dni");
             $query->execute([
-                ':dni' => self::getDni()
+                ':dni' => self::getDocumento()
             ]);
 
             if ($query->rowCount() == 0) {
@@ -156,12 +156,12 @@ class UserModel extends ConnectionDB {
     /*******************************************Registrar usuario************************************************/
     final public static function postSave()
     {
-        if (Sql::exists("SELECT dni FROM usuario WHERE dni = :dni",":dni",self::getDni())) {  
+        if (Sql::exists("SELECT dni FROM usuario WHERE dni = :dni",":dni",self::getDocumento())) {  
             return ResponseHttp::status400('El DNI ya esta registrado');
         } else if (Sql::exists("SELECT correo FROM usuario WHERE correo = :correo",":correo",self::getEmail())) {
             return ResponseHttp::status400('El Correo ya esta registrado');
         } else {
-            self::setIDToken(hash('sha512',self::getDni().self::getEmail()));            
+            self::setIDToken(hash('sha512',self::getDocumento().self::getEmail()));            
 
             try {
                 $con = self::getConnection();
@@ -171,7 +171,7 @@ class UserModel extends ConnectionDB {
                 $query->execute([
                     ':nombre'  => self::getName(),
                     ':apellido'=> self::getApellido(),
-                    ':dni'     => self::getDni(),
+                    ':dni'     => self::getDocumento(),
                     ':correo'  => self::getEmail(),
                     ':rol'     => self::getRol(),                    
                     ':password'=> Security::createPassword(self::getPassword()),
@@ -234,17 +234,17 @@ class UserModel extends ConnectionDB {
     /*******************************************Registrar Fotos************************************************/
     final public static function postSavePictures()
     {
-        // if (Sql::exists("SELECT dni FROM usuario WHERE dni = :dni",":dni",self::getDni())) {  
+        // if (Sql::exists("SELECT dni FROM usuario WHERE dni = :dni",":dni",self::getDocumento())) {  
         //     return ResponseHttp::status400('El DNI ya esta registrado');
         // } else if (Sql::exists("SELECT correo FROM usuario WHERE correo = :correo",":correo",self::getEmail())) {
         //     return ResponseHttp::status400('El Correo ya esta registrado');
         // } else {
-        //     self::setIDToken(hash('sha512',self::getDni().self::getEmail()));            
+        //     self::setIDToken(hash('sha512',self::getDocumento().self::getEmail()));            
 
             try {
 
-                $profile = self::saveBase64Picture(self::getFotoPerfil(), '/img/profile/' , self::getDni());
-                $document = self::saveBase64Picture(self::getFotoDni(), '/img/document/' , self::getDni());
+                $profile = self::saveBase64Picture(self::getFotoPerfil(), '/img/profile/' , self::getDocumento());
+                $document = self::saveBase64Picture(self::getFotoDni(), '/img/document/' , self::getDocumento());
 
                 if($profile || $document){
                     return ResponseHttp::status200('Imagenes registradas exitosamente');
@@ -258,7 +258,7 @@ class UserModel extends ConnectionDB {
                 // $query = $con->prepare($query1 . $query2);
                 // $query->execute([
                 //     ':nombre'  => self::getName(),
-                //     ':dni'     => self::getDni(),
+                //     ':dni'     => self::getDocumento(),
                 //     ':correo'  => self::getEmail(),
                 //     ':rol'     => self::getRol(),                    
                 //     ':password'=> Security::createPassword(self::getPassword()),
