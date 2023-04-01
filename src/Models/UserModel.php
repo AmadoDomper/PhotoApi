@@ -10,9 +10,12 @@ use App\DB\Sql;
 class UserModel extends ConnectionDB {
 
     //Propiedades de la base de datos
+    private static string $idPersona;
     private static string $nombre;
     private static string $apellido;
     private static string $documento;
+    private static string $tipoFFVV;
+    private static string $sede;
     private static string $correo;
     private static int    $rol;    
     private static string $password;
@@ -22,9 +25,12 @@ class UserModel extends ConnectionDB {
 
     public function __construct(array $data)
     {
+        self::$idPersona   = $data['idPersona'] ?: '';
         self::$nombre   = $data['name'] ?: '';
         self::$apellido   = $data['apellido'] ?: '';
         self::$documento      = $data['documento'] ?: '';
+        self::$tipoFFVV      = $data['tipoFFVV'] ?: '';
+        self::$sede      = $data['sede'] ?: '';
         self::$correo   = $data['email'] ?: '';
         self::$rol      = $data['rol'] ?: 0;        
         self::$password = $data['password'] ?: ''; 
@@ -33,9 +39,12 @@ class UserModel extends ConnectionDB {
     }
 
     /************************Metodos Getter**************************/
+    final public static function getPersonaId(){     return self::$idPersona;}
     final public static function getName(){     return self::$nombre;}
     final public static function getApellido(){     return self::$apellido;}
     final public static function getDocumento(){      return self::$documento;}
+    final public static function getTipoFFVV(){      return self::$tipoFFVV;}
+    final public static function getSede(){      return self::$sede;}
     final public static function getEmail(){    return self::$correo;}
     final public static function getRol(){      return self::$rol;}     
     final public static function getPassword(){ return self::$password;}
@@ -44,9 +53,12 @@ class UserModel extends ConnectionDB {
     final public static function getIDToken(){  return self::$IDToken;}    
     
     /**********************************Metodos Setter***********************************/
+    final public static function setPersonaId(string $idPersona) {      self::$idPersona = $idPersona;}
     final public static function setName(string $nombre) {      self::$nombre = $nombre;}
     final public static function setApellido(string $apellido) {      self::$apellido = $apellido;}
     final public static function setDocumento(string $documento){           self::$documento = $documento;}
+    final public static function setTipoFFVV(string $tipoFFVV){           self::$tipoFFVV = $tipoFFVV;}
+    final public static function setSede(string $sede){           self::$sede = $sede;}
     final public static function setEmail(string $correo){      self::$correo = $correo;}
     final public static function setRol(string $rol){           self::$rol = $rol;}      
     final public static function setPassword(string $password){ self::$password = $password;}
@@ -136,13 +148,13 @@ class UserModel extends ConnectionDB {
     {
         try {
             $con = self::getConnection();
-            $query = $con->prepare("SELECT dni, nombre, apellido FROM usuario WHERE dni = :dni");
+            $query = $con->prepare("SELECT idpersona, documento, nombre, apellido,tipoFFVV, sede FROM usuario_na WHERE documento = :documento");
             $query->execute([
-                ':dni' => self::getDocumento()
+                ':documento' => self::getDocumento()
             ]);
 
             if ($query->rowCount() == 0) {
-                return ResponseHttp::status400('El DNI ingresado no esta registrado');
+                return ResponseHttp::status400('El documento ingresado no esta registrado');
             } else {
                     $rs = $query->fetch(\PDO::FETCH_ASSOC);
                     return $rs;
