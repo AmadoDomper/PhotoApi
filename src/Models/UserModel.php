@@ -283,7 +283,10 @@ class UserModel extends ConnectionDB {
     }
 
     public static function saveBase64Picture($base64Picture, $path, $name){
-        // error_log($base64Picture);
+        
+        if(empty($base64Picture))
+            return 0;
+        
         $base64Picture = str_replace('data:image/jpg;base64,', '', $base64Picture);
         $base64Picture = str_replace('data:image/jpeg;base64,', '', $base64Picture);
         $base64Picture = str_replace(' ', '+', $base64Picture);
