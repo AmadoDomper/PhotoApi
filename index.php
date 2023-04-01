@@ -6,7 +6,7 @@ use App\Config\ResponseHttp;
 require './vendor/autoload.php';
 
 //ResponseHttp::headerHttpPro($_SERVER['REQUEST_METHOD'],$_SERVER['HTTP_ORIGIN']);//CORS Producción
-// ResponseHttp::headerHttpDev($_SERVER['REQUEST_METHOD']);//CORS Desarrollo
+ResponseHttp::headerHttpDev($_SERVER['REQUEST_METHOD']);//CORS Desarrollo
 
 header("Access-Control-Allow-Origin: *");
 header('Access-Control-Allow-Methods: GET,PUT,POST,PATCH,DELETE');

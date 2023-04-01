@@ -139,7 +139,7 @@ class UserController extends BaseController{
             $validator = new Validator;
             
             $validation = $validator->validate($this->getParam(), [
-                'dni'                => 'required|numeric'
+                'documento'                => 'required'
             ]);      
     
             if ($validation->fails()) {            
