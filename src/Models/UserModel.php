@@ -246,10 +246,10 @@ class UserModel extends ConnectionDB {
                 $profile = self::saveBase64Picture(self::getFotoPerfil(), '/img/profile/' , self::getDni());
                 $document = self::saveBase64Picture(self::getFotoDni(), '/img/document/' , self::getDni());
 
-                if($profile && $document){
+                if($profile || $document){
                     return ResponseHttp::status200('Imagenes registradas exitosamente');
                 }else{
-                    return ResponseHttp::status500('No se puede registrar correctamente');
+                    return ResponseHttp::status500('No se ha registrado ninguna imagen');
                 }
 
                 // $con = self::getConnection();

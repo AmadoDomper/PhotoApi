@@ -139,9 +139,7 @@ class UserController extends BaseController{
             $validator = new Validator;
             
             $validation = $validator->validate($this->getParam(), [
-                'dni'                => 'required|numeric',
-                'fotoPerfil'         => 'required',   
-                'fotoDni'            => 'required'   
+                'dni'                => 'required|numeric'
             ]);      
     
             if ($validation->fails()) {            
