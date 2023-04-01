@@ -46,9 +46,7 @@ class UserController extends BaseController{
             // Security::validateTokenJwt(Security::secretKey());
             $documento = $this->getAttribute()[1];
             if (!isset($documento)) {
-                echo json_encode(ResponseHttp::status400('El campo Documento es requerido'));
-            }else if (!preg_match(self::$validate_number, $documento)) {
-                echo json_encode(ResponseHttp::status400('El DNI soo admite números'));
+                echo json_encode(ResponseHttp::status400('El campo documento es requerido'));
             } else {
                 UserModel::setDocumento($documento);
                 echo json_encode(UserModel::getUser());
