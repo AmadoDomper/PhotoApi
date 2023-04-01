@@ -9,12 +9,14 @@ $params  = explode('/' ,$_GET['route']);
 /*************Instancia del controlador de usuario**************/
 $app = new UserController();
 
-/*************Rutas***************/
+// /*************Rutas***************/
 $app->getAll('user/');
 $app->getUser("user/{$params[1]}/");
 $app->postSave('user/');
-$app->patchPassword('user/password/');
-$app->deleteUser('user/');
+// $app->patchPassword('user/password/');
+// $app->deleteUser('user/');
+$app->postSavePictures('user/savePictures/');
 
-/****************Error 404*****************/
+// /****************Error 404*****************/
 echo json_encode(ResponseHttp::status404());
+

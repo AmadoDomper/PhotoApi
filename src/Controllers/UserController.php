@@ -43,7 +43,7 @@ class UserController extends BaseController{
     final public function getUser(string $endPoint)
     {
         if ($this->getMethod() == 'get' && $endPoint == $this->getRoute()) {
-            Security::validateTokenJwt(Security::secretKey());
+            // Security::validateTokenJwt(Security::secretKey());
             $dni = $this->getAttribute()[1];
             if (!isset($dni)) {
                 echo json_encode(ResponseHttp::status400('El campo DNI es requerido'));
@@ -68,6 +68,7 @@ class UserController extends BaseController{
         
         $validation = $validator->validate($this->getParam(), [
             'name'               => 'required|regex:/^[a-zA-Z ]+$/',
+            'apellido'               => 'required|regex:/^[a-zA-Z ]+$/',
             'dni'                => 'required|numeric',
             'email'              => 'required|email',            
             'rol'                => 'required|numeric|min:1|regex:/^[12]+$/',
@@ -127,4 +128,31 @@ class UserController extends BaseController{
         exit;
         }
     }
+
+
+        /***************************************Registrar Fotos*************************************************/
+        final public function postSavePictures(string $endPoint)
+        {
+           if ($this->getMethod() == 'post' && $endPoint == $this->getRoute()) {
+           // Security::validateTokenJwt(Security::secretKey()); 
+    
+            $validator = new Validator;
+            
+            $validation = $validator->validate($this->getParam(), [
+                'dni'                => 'required|numeric',
+                'fotoPerfil'         => 'required',   
+                'fotoDni'            => 'required'   
+            ]);      
+    
+            if ($validation->fails()) {            
+                $errors = $validation->errors();            	
+                echo json_encode(ResponseHttp::status400($errors->all()[0]));
+            } else {            
+                new UserModel($this->getParam());
+                echo json_encode(UserModel::postSavePictures());
+            }              
+                              
+            exit;
+           }
+        }   
 }

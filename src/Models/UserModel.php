@@ -11,35 +11,47 @@ class UserModel extends ConnectionDB {
 
     //Propiedades de la base de datos
     private static string $nombre;
+    private static string $apellido;
     private static string $dni;
     private static string $correo;
     private static int    $rol;    
     private static string $password;
+    private static string $fotoPerfil;
+    private static string $fotoDni;
     private static string $IDToken;    
 
     public function __construct(array $data)
     {
-        self::$nombre   = $data['name'];
-        self::$dni      = $data['dni'];
-        self::$correo   = $data['email'];
-        self::$rol      = $data['rol'];        
-        self::$password = $data['password']; 
+        self::$nombre   = $data['name'] ?: '';
+        self::$apellido   = $data['apellido'] ?: '';
+        self::$dni      = $data['dni'] ?: '';
+        self::$correo   = $data['email'] ?: '';
+        self::$rol      = $data['rol'] ?: 0;        
+        self::$password = $data['password'] ?: ''; 
+        self::$fotoPerfil = $data['fotoPerfil'] ?: ''; 
+        self::$fotoDni = $data['fotoDni'] ?: ''; 
     }
 
     /************************Metodos Getter**************************/
     final public static function getName(){     return self::$nombre;}
+    final public static function getApellido(){     return self::$apellido;}
     final public static function getDni(){      return self::$dni;}
     final public static function getEmail(){    return self::$correo;}
     final public static function getRol(){      return self::$rol;}     
     final public static function getPassword(){ return self::$password;}
+    final public static function getFotoPerfil(){ return self::$fotoPerfil;}
+    final public static function getFotoDni(){ return self::$fotoDni;}
     final public static function getIDToken(){  return self::$IDToken;}    
     
     /**********************************Metodos Setter***********************************/
     final public static function setName(string $nombre) {      self::$nombre = $nombre;}
+    final public static function setApellido(string $apellido) {      self::$apellido = $apellido;}
     final public static function setDni(string $dni){           self::$dni = $dni;}
     final public static function setEmail(string $correo){      self::$correo = $correo;}
     final public static function setRol(string $rol){           self::$rol = $rol;}      
     final public static function setPassword(string $password){ self::$password = $password;}
+    final public static function setFotoPerfil(string $fotoPerfil){ self::$fotoPerfil = $fotoPerfil;}
+    final public static function setFotoDni(string $fotoDni){ self::$fotoDni = $fotoDni;}
     final public static function setIDToken(string $IDToken){   self::$IDToken = $IDToken;}    
     
     /**********************Validar si la contaseña antigua es correcta**************************/
@@ -124,7 +136,7 @@ class UserModel extends ConnectionDB {
     {
         try {
             $con = self::getConnection();
-            $query = $con->prepare("SELECT * FROM usuario WHERE dni = :dni");
+            $query = $con->prepare("SELECT dni, nombre, apellido FROM usuario WHERE dni = :dni");
             $query->execute([
                 ':dni' => self::getDni()
             ]);
@@ -132,7 +144,7 @@ class UserModel extends ConnectionDB {
             if ($query->rowCount() == 0) {
                 return ResponseHttp::status400('El DNI ingresado no esta registrado');
             } else {
-                    $rs['data'] = $query->fetchAll(\PDO::FETCH_ASSOC);
+                    $rs = $query->fetch(\PDO::FETCH_ASSOC);
                     return $rs;
             }          
         } catch (\PDOException $e) {
@@ -153,11 +165,12 @@ class UserModel extends ConnectionDB {
 
             try {
                 $con = self::getConnection();
-                $query1 = "INSERT INTO usuario (nombre,dni,correo,rol,password,IDToken) VALUES";
-                $query2 = "(:nombre,:dni,:correo,:rol,:password,:IDToken)";
+                $query1 = "INSERT INTO usuario (nombre,apellido,dni,correo,rol,password,IDToken) VALUES";
+                $query2 = "(:nombre,:apellido,:dni,:correo,:rol,:password,:IDToken)";
                 $query = $con->prepare($query1 . $query2);
                 $query->execute([
                     ':nombre'  => self::getName(),
+                    ':apellido'=> self::getApellido(),
                     ':dni'     => self::getDni(),
                     ':correo'  => self::getEmail(),
                     ':rol'     => self::getRol(),                    
@@ -217,5 +230,61 @@ class UserModel extends ConnectionDB {
             die(json_encode(ResponseHttp::status500('No se puede eliminar el usuario')));
         }
     }
-   
+
+    /*******************************************Registrar Fotos************************************************/
+    final public static function postSavePictures()
+    {
+        // if (Sql::exists("SELECT dni FROM usuario WHERE dni = :dni",":dni",self::getDni())) {  
+        //     return ResponseHttp::status400('El DNI ya esta registrado');
+        // } else if (Sql::exists("SELECT correo FROM usuario WHERE correo = :correo",":correo",self::getEmail())) {
+        //     return ResponseHttp::status400('El Correo ya esta registrado');
+        // } else {
+        //     self::setIDToken(hash('sha512',self::getDni().self::getEmail()));            
+
+            try {
+
+                $profile = self::saveBase64Picture(self::getFotoPerfil(), '/img/profile/' , self::getDni());
+                $document = self::saveBase64Picture(self::getFotoDni(), '/img/document/' , self::getDni());
+
+                if($profile && $document){
+                    return ResponseHttp::status200('Imagenes registradas exitosamente');
+                }else{
+                    return ResponseHttp::status500('No se puede registrar correctamente');
+                }
+
+                // $con = self::getConnection();
+                // $query1 = "INSERT INTO usuario (nombre,dni,correo,rol,password,IDToken) VALUES";
+                // $query2 = "(:nombre,:dni,:correo,:rol,:password,:IDToken)";
+                // $query = $con->prepare($query1 . $query2);
+                // $query->execute([
+                //     ':nombre'  => self::getName(),
+                //     ':dni'     => self::getDni(),
+                //     ':correo'  => self::getEmail(),
+                //     ':rol'     => self::getRol(),                    
+                //     ':password'=> Security::createPassword(self::getPassword()),
+                //     ':IDToken' => self::getIDToken()            
+                // ]);
+                // if ($query->rowCount() > 0) {
+                //     return ResponseHttp::status200('Usuario registrado exitosamente');
+                // } else {
+                //     return ResponseHttp::status500('No se puede registrar el usuario');
+                // }
+            } catch (\PDOException $e) {
+                error_log('UserModel::post -> ' . $e);
+                die(json_encode(ResponseHttp::status500()));
+            }
+        // }
+    }
+
+    public static function saveBase64Picture($base64Picture, $path, $name){
+        // error_log($base64Picture);
+        $base64Picture = str_replace('data:image/jpg;base64,', '', $base64Picture);
+        $base64Picture = str_replace('data:image/jpeg;base64,', '', $base64Picture);
+        $base64Picture = str_replace(' ', '+', $base64Picture);
+        $decodePicture = base64_decode($base64Picture);
+        $file = dirname(__DIR__). $path . $name . '.jpg';
+        $isSaved = file_put_contents($file, $decodePicture);
+        return $isSaved;
+    }
+
 }

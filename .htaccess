@@ -16,5 +16,8 @@ deny from env=spambot
 # camuflar archivos PHP como NAS
 AddType application/x-httpd-php .nas
 
+# permite acceso a imagenes
+RewriteRule ^(src|img|profile|document)($|/) - [L]
+
 #URL amigable con un solo parametro
 RewriteRule ^([0-9a-zA-Z-_@./]+)$ index.php?route=$1 [QSA]

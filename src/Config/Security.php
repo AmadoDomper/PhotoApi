@@ -57,7 +57,7 @@ class Security {
         }
         try {
             $jwt = explode(" " ,getallheaders()['Authorization']);
-            $data = JWT::decode($jwt[1],$key,array('HS256'));
+            $data = JWT::decode($jwt[0], new Key($_ENV['SECRET_KEY'], 'HS256'));
             self::$jwt_data = $data;
             return $data;
             exit;
