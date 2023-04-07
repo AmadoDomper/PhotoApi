@@ -10,7 +10,8 @@ $params  = explode('/' ,$_GET['route']);
 $app = new UserController();
 
 // /*************Rutas***************/
-// $app->getAll('user/');
+$app->getAll('user/');
+$app->getUserPictures('user/pictures/');
 $app->getUser("user/{$params[1]}/");
 $app->postSave('user/');
 // $app->patchPassword('user/password/');

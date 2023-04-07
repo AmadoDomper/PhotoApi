@@ -133,7 +133,7 @@ class UserModel extends ConnectionDB {
     {
         try {
             $con = self::getConnection();
-            $query = $con->prepare("SELECT * FROM usuario");
+            $query = $con->prepare("SELECT idpersona, nombre, apellido, documento, tipoFFVV, sede  FROM usuario_na");
             $query->execute();
             $rs['data'] = $query->fetchAll(\PDO::FETCH_ASSOC);
             return $rs;
@@ -142,6 +142,24 @@ class UserModel extends ConnectionDB {
             die(json_encode(ResponseHttp::status500('No se pueden obtener los datos')));
         }
     }
+
+        /**************************Consultar todos los usuarios***************************/
+        final public static function getUserPictures()
+        {
+            try {
+                $con = self::getConnection();
+                $query = $con->prepare("SELECT UF.documento, UF.fotoPerfil ,UF.fotoDocumento, UF.UltimaActualizacion, U.nombre, U.apellido, U.tipoFFVV, U.sede  
+                                        FROM usuario_na_foto UF
+                                        INNER JOIN usuario_na U ON U.documento = UF.documento
+                                        ORDER BY UF.UltimaActualizacion DESC");
+                $query->execute();
+                $rs = $query->fetchAll(\PDO::FETCH_ASSOC);
+                return $rs;
+            } catch (\PDOException $e) {
+                error_log("UserModel::getAll -> ".$e);
+                die(json_encode(ResponseHttp::status500('No se pueden obtener los datos')));
+            }
+        }
 
     /**************************Consultar un usuario por DNI**************************************/
     final public static function getUser()

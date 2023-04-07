@@ -33,8 +33,18 @@ class UserController extends BaseController{
     final public function getAll(string $endPoint)
     {
         if ($this->getMethod() == 'get' && $endPoint == $this->getRoute()) {
-            Security::validateTokenJwt(Security::secretKey());
+            // Security::validateTokenJwt(Security::secretKey());
             echo json_encode(UserModel::getAll());
+            exit;
+        }    
+    }
+
+    /**********************Consultar todos los usuarios*********************/
+    final public function getUserPictures(string $endPoint)
+    {
+        if ($this->getMethod() == 'get' && $endPoint == $this->getRoute()) {
+            // Security::validateTokenJwt(Security::secretKey());
+            echo json_encode(UserModel::getUserPictures());
             exit;
         }    
     }
@@ -150,5 +160,5 @@ class UserController extends BaseController{
                               
             exit;
            }
-        }   
+        }
 }
