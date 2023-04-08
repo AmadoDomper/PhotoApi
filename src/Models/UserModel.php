@@ -148,10 +148,12 @@ class UserModel extends ConnectionDB {
         {
             try {
                 $con = self::getConnection();
-                $query = $con->prepare("SELECT UF.documento, UF.fotoPerfil ,UF.fotoDocumento, UF.UltimaActualizacion, U.nombre, U.apellido, U.tipoFFVV, U.sede  
-                                        FROM usuario_na_foto UF
-                                        INNER JOIN usuario_na U ON U.documento = UF.documento
-                                        ORDER BY UF.UltimaActualizacion DESC");
+                $query = $con->prepare("SELECT U.documento, U.nombre,U.apellido,U.tipoFFVV, U.sede, IFNULL(UF.fotoPerfil,FALSE) fotoPerfil ,
+                IFNULL(UF.fotoDocumento,FALSE) fotoDocumento, lp.estadoActual
+                FROM usuario_na U
+                INNER JOIN ListaPresentes lp ON lp.documento = U.documento
+                LEFT JOIN usuario_na_foto UF ON U.documento = UF.documento 
+                ORDER BY UF.UltimaActualizacion DESC");
                 $query->execute();
                 $rs = $query->fetchAll(\PDO::FETCH_ASSOC);
                 return $rs;
